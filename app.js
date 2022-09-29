@@ -1,5 +1,7 @@
 const express = require("express");
+
 const app = express();
+const port = process.env.PORT || 3000;
 
 // Routes
 
@@ -15,4 +17,4 @@ app.get('/users', (req, res) => {
     res.send('This is the user page');
 });
 
-app.listen(3000);
+app.listen(port);
