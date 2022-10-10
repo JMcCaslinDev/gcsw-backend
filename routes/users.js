@@ -1,16 +1,17 @@
 const router = require('express').Router();
-const { requiresAuth } = require('express-openid-connect');
 let User = require('../models/user.model');
 
+const { checkJwt } = require('../authz/check-jwt');
+
 // default route, gets all users in the db
-router.route('/').get(requiresAuth(), (req, res) => {
+router.route('/').get(checkJwt, (req, res) => {
     User.find()
         .then(users => res.json(users))
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
 // adds a user to the db
-router.route('/add').post(requiresAuth(), (req, res) => {
+router.route('/add').post(checkJwt, (req, res) => {
     const username = req.body.username;
 
     // create a new user
