@@ -20,8 +20,10 @@ connection.once('open', () => {
 });
 
 const usersRouter = require('./routes/users');
+const participantsRouter = require('./routes/participants');
 
 app.use('/users', usersRouter);
+app.use('/participants', participantsRouter);
 
 // Routes
 
