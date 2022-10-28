@@ -9,7 +9,7 @@ const participantSchema = new Schema({
     gender: { type: String, required: true },
     age: { type: Number, require: true },
     school: { type: String, require: true},
-    objective: { type: String, require: false },
+    objectives: [{ type: String, require: false }],
     dates: [{ type: Date, required: true }],
 }, {
     timestamps: true,
