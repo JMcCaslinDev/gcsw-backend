@@ -22,6 +22,12 @@ router.route('/:participant_id').get((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err))
 });
 
+router.route('/date/:date').get((req, res) => {
+Participant.find({dates: { $all: [req.params.date] }})
+        .then(participants => res.json(participants))
+        .catch(err => res.status(400).json('Error: ' + err))   
+});
+
 /**
  * signs in participant for the day
  */
@@ -31,14 +37,14 @@ router.route('/signin').post((req, res) => {
         if (!err) {
             // if participant is already in the db, simply update their objective and sign in date
             if (participant) {
-                const newDate = new Date();
+                let newDate = new Date();
 
                 // update the participant with new objective and date
                 Participant.updateOne( 
                     { participant_id: req.body.participant_id },
                     { $push: { 
                         objectives: req.body.objective,
-                        dates: newDate }},
+                        dates: newDate.toDateString() }},
                 )
                 .then(() => res.json('Participant signed in'))
                 .catch(err => res.status(400).json('Error: ' + err));
@@ -51,11 +57,11 @@ router.route('/signin').post((req, res) => {
                 const age = req.body.age;
                 const school = req.body.school;
                 const objective = req.body.objective;
-                const date = new Date(); // current date
+                let date = new Date(); // current date
 
                 // create new array of dates, push first date
                 const dates = [];
-                dates.push(date);
+                dates.push(date.toDateString());
 
                 // creates new array of objectives, push first objective
                 const objectives = [];
