@@ -88,8 +88,28 @@ router.route('/signin').post((req, res) => {
     });
 });
 
+// updates all of a participant's information
+router.route('/edit/:id').put((req, res) => {
+    Participant.findById(req.params.id)
+        .then(participant => {
+            participant.participant_id = req.body.participant_id;
+            participant.first_name = req.body.first_name;
+            participant.last_name = req.body.last_name;
+            participant.gender = req.body.gender;
+            participant.age = req.body.age;
+            participant.school = req.body.school;
+            participant.objectives = req.body.objectives;
+            participant.dates = req.body.dates;
+
+            participant.save()
+                .then(() => res.json('Participant updated!'))
+                .catch(err => res.status(400).json('Error: ' + err));
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
+})
+
 // deletes a parpicipant entry by deleting a date
-router.route('/:id/:date').put((req, res) => {
+router.route('/delete_entry/:id/:date').put((req, res) => {
     Participant.updateOne(
         { _id: req.params.id },
         { $pull: { dates: req.params.date } }
@@ -97,4 +117,11 @@ router.route('/:id/:date').put((req, res) => {
     .then(() => res.json('Participant entry deleted!'))
     .catch(err => res.status(400).json('Error: ' + err));
 });
+
+// deletes a whole participant
+router.route('/delete/:id').delete((req, res) => {
+    Participant.findByIdAndDelete(req.params.id)
+        .then(() => res.json('Participant deleted'))
+        .catch(err => res.status(400).json('Error: ' + err));
+})
 module.exports = router;
