@@ -88,4 +88,13 @@ router.route('/signin').post((req, res) => {
     });
 });
 
+// deletes a parpicipant entry by deleting a date
+router.route('/:id/:date').put((req, res) => {
+    Participant.updateOne(
+        { _id: req.params.id },
+        { $pull: { dates: req.params.date } }
+    )
+    .then(() => res.json('Participant entry deleted!'))
+    .catch(err => res.status(400).json('Error: ' + err));
+});
 module.exports = router;
