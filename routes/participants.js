@@ -23,7 +23,10 @@ router.route('/:participant_id').get((req, res) => {
 });
 
 router.route('/date/:date').get((req, res) => {
-Participant.find({dates: { $all: [req.params.date] }})
+Participant.find({[`dates_with_objectives.${req.params.date}`]: { 
+                    "$exists": true 
+                }
+            })
         .then(participants => res.json(participants))
         .catch(err => res.status(400).json('Error: ' + err))   
 });
@@ -42,9 +45,8 @@ router.route('/signin').post((req, res) => {
                 // update the participant with new objective and date
                 Participant.updateOne( 
                     { participant_id: req.body.participant_id },
-                    { $push: { 
-                        objectives: req.body.objective,
-                        dates: newDate.toDateString() }},
+                    { $set: { 
+                        [`dates_with_objectives.${newDate.toDateString()}`]: req.body.objective }},
                 )
                 .then(() => res.json('Participant signed in'))
                 .catch(err => res.status(400).json('Error: ' + err));
@@ -57,15 +59,10 @@ router.route('/signin').post((req, res) => {
                 const age = req.body.age;
                 const school = req.body.school;
                 const objective = req.body.objective;
-                let date = new Date(); // current date
+                let date = new Date(req.body.date); // current date
+                date = date.toDateString();
 
-                // create new array of dates, push first date
-                const dates = [];
-                dates.push(date.toDateString());
-
-                // creates new array of objectives, push first objective
-                const objectives = [];
-                objectives.push(objective);
+                const dates_with_objectives = new Map();
 
                 // create a new participant
                 const newParticipant = new Participant({
@@ -75,9 +72,10 @@ router.route('/signin').post((req, res) => {
                     gender,
                     age,
                     school,
-                    objectives,
-                    dates
+                    dates_with_objectives
                 });
+
+                newParticipant.dates_with_objectives.set(date, objective);
 
                 // save new participant
                 newParticipant.save()
@@ -98,8 +96,7 @@ router.route('/edit/:id').put((req, res) => {
             participant.gender = req.body.gender;
             participant.age = req.body.age;
             participant.school = req.body.school;
-            participant.objectives = req.body.objectives;
-            participant.dates = req.body.dates;
+            participant.dates_with_objectives.set(req.body.date, req.body.objective);
 
             participant.save()
                 .then(() => res.json('Participant updated!'))
