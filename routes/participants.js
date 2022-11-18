@@ -13,8 +13,14 @@ router.route('/').get((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
+router.route('/id/:id').get((req, res) => {
+    Participant.findById(req.params.id)
+        .then(participant => res.json(participant))
+        .catch(err => res.status(400).json('Error: ' + err));
+});
+
 /**
- * finds a participant by their id
+ * finds a participant by their custom id
  */
 router.route('/:participant_id').get((req, res) => {
     Participant.find({participant_id: req.params.participant_id})
@@ -22,6 +28,9 @@ router.route('/:participant_id').get((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err))
 });
 
+/**
+ * finds all participants with the matching date parameter
+ */
 router.route('/date/:date').get((req, res) => {
 Participant.find({[`dates_with_objectives.${req.params.date}`]: { 
                     "$exists": true 
@@ -33,6 +42,7 @@ Participant.find({[`dates_with_objectives.${req.params.date}`]: {
 
 /**
  * signs in participant for the day
+ * creates new participant if not in the db
  */
 router.route('/signin').post((req, res) => {
     // find the participant
@@ -40,7 +50,7 @@ router.route('/signin').post((req, res) => {
         if (!err) {
             // if participant is already in the db, simply update their objective and sign in date
             if (participant) {
-                let newDate = new Date();
+                let newDate = new Date(req.body.date);
 
                 // update the participant with new objective and date
                 Participant.updateOne( 
@@ -62,9 +72,10 @@ router.route('/signin').post((req, res) => {
                 let date = new Date(req.body.date); // current date
                 date = date.toDateString();
 
+                // initialize empty map
                 const dates_with_objectives = new Map();
 
-                // create a new participant
+                // create a new participant object
                 const newParticipant = new Participant({
                     participant_id,
                     first_name,
@@ -75,6 +86,7 @@ router.route('/signin').post((req, res) => {
                     dates_with_objectives
                 });
 
+                // set new date key with objective
                 newParticipant.dates_with_objectives.set(date, objective);
 
                 // save new participant
@@ -86,39 +98,56 @@ router.route('/signin').post((req, res) => {
     });
 });
 
-// updates all of a participant's information
+/**
+ * updates all of a participant's information
+ */
 router.route('/edit/:id').put((req, res) => {
+    // find with object ID parameter
     Participant.findById(req.params.id)
         .then(participant => {
+            // update participant fields
             participant.participant_id = req.body.participant_id;
             participant.first_name = req.body.first_name;
             participant.last_name = req.body.last_name;
             participant.gender = req.body.gender;
             participant.age = req.body.age;
             participant.school = req.body.school;
-            participant.dates_with_objectives.set(req.body.date, req.body.objective);
+            // participant.dates_with_objectives.set(req.body.date, req.body.objective);
 
+            // save the participant
             participant.save()
                 .then(() => res.json('Participant updated!'))
                 .catch(err => res.status(400).json('Error: ' + err));
         })
         .catch(err => res.status(400).json('Error: ' + err));
-})
-
-// deletes a parpicipant entry by deleting a date
-router.route('/delete_entry/:id/:date').put((req, res) => {
-    Participant.updateOne(
-        { _id: req.params.id },
-        { $pull: { dates: req.params.date } }
-    )
-    .then(() => res.json('Participant entry deleted!'))
-    .catch(err => res.status(400).json('Error: ' + err));
 });
 
-// deletes a whole participant
+/**
+ * deletes a parpicipant date entry
+ */
+router.route('/delete_entry/:id/:date').put((req, res) => {
+    // find using object ID parameter
+    Participant.findById(req.params.id)
+        .then(participant => {
+            // deletes date key from dates_with_objectives map
+            participant.dates_with_objectives.delete(req.params.date);
+            
+            // save participant
+            participant.save()
+                .then(() => res.json('Participant entry deleted!'))
+                .catch(err => res.status(400).json('Error: ' + err));
+        })
+        .catch(err => res.status(400).json('Error: ' + err));
+});
+
+/**
+ * deletes an entire participant document from the db
+ */
 router.route('/delete/:id').delete((req, res) => {
+    // finds and deletes using object ID
     Participant.findByIdAndDelete(req.params.id)
         .then(() => res.json('Participant deleted'))
         .catch(err => res.status(400).json('Error: ' + err));
-})
+});
+
 module.exports = router;
