@@ -50,13 +50,11 @@ router.route('/signin').post((req, res) => {
         if (!err) {
             // if participant is already in the db, simply update their objective and sign in date
             if (participant) {
-                let newDate = new Date(req.body.date);
-
                 // update the participant with new objective and date
                 Participant.updateOne( 
                     { participant_id: req.body.participant_id },
                     { $set: { 
-                        [`dates_with_objectives.${newDate.toDateString()}`]: req.body.objective }},
+                        [`dates_with_objectives.${req.body.date}`]: req.body.objective }},
                 )
                 .then(() => res.json('Participant signed in'))
                 .catch(err => res.status(400).json('Error: ' + err));
@@ -69,8 +67,6 @@ router.route('/signin').post((req, res) => {
                 const age = req.body.age;
                 const school = req.body.school;
                 const objective = req.body.objective;
-                let date = new Date(req.body.date); // current date
-                date = date.toDateString();
 
                 // initialize empty map
                 const dates_with_objectives = new Map();
@@ -87,7 +83,7 @@ router.route('/signin').post((req, res) => {
                 });
 
                 // set new date key with objective
-                newParticipant.dates_with_objectives.set(date, objective);
+                newParticipant.dates_with_objectives.set(req.body.date, objective);
 
                 // save new participant
                 newParticipant.save()
