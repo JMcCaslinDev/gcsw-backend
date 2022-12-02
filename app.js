@@ -19,13 +19,12 @@ connection.once('open', () => {
     console.log('MongoDB database connection established successfully');
 });
 
-const usersRouter = require('./routes/users');
 const participantsRouter = require('./routes/participants');
 
-app.use('/users', usersRouter);
-app.use('/participants', participantsRouter);
-
-// Routes
+/**
+ * API endpoints
+ */
+app.use('/api/participants', participantsRouter);
 
 /**
  * Default route
