@@ -7,13 +7,16 @@ const { updateOne } = require('../models/participant.model');
 /**
  * default route, gets all participants in the db
  */
-router.route('/').get((req, res) => {
+router.route('/').get(checkJwt, (req, res) => {
     Participant.find()
         .then(participants => res.json(participants))
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
-router.route('/id/:id').get((req, res) => {
+/**
+ * 
+ */
+router.route('/id/:id').get(checkJwt, (req, res) => {
     Participant.findById(req.params.id)
         .then(participant => res.json(participant))
         .catch(err => res.status(400).json('Error: ' + err));
@@ -22,7 +25,7 @@ router.route('/id/:id').get((req, res) => {
 /**
  * finds a participant by their custom id
  */
-router.route('/:participant_id').get((req, res) => {
+router.route('/:participant_id').get(checkJwt, (req, res) => {
     Participant.find({participant_id: req.params.participant_id})
         .then(participant => res.json(participant))
         .catch(err => res.status(400).json('Error: ' + err))
@@ -31,7 +34,7 @@ router.route('/:participant_id').get((req, res) => {
 /**
  * finds all participants with the matching date parameter
  */
-router.route('/date/:date').get((req, res) => {
+router.route('/date/:date').get(checkJwt, (req, res) => {
 Participant.find({[`dates_with_objectives.${req.params.date}`]: { 
                     "$exists": true 
                 }
@@ -44,7 +47,7 @@ Participant.find({[`dates_with_objectives.${req.params.date}`]: {
  * signs in participant for the day
  * creates new participant if not in the db
  */
-router.route('/signin').post((req, res) => {
+router.route('/signin').post(checkJwt, (req, res) => {
     // find the participant
     Participant.findOne({participant_id: req.body.participant_id}, function(err, participant) {
         if (!err) {
@@ -97,7 +100,7 @@ router.route('/signin').post((req, res) => {
 /**
  * updates all of a participant's information
  */
-router.route('/edit/:id').put((req, res) => {
+router.route('/edit/:id').put(checkJwt, (req, res) => {
     // find with object ID parameter
     Participant.findById(req.params.id)
         .then(participant => {
@@ -120,6 +123,7 @@ router.route('/edit/:id').put((req, res) => {
 
 /**
  * deletes a parpicipant date entry
+ * TODO: Has bug that causes authorization error when using checkJwt middleware
  */
 router.route('/delete_entry/:id/:date').put((req, res) => {
     // find using object ID parameter
@@ -139,7 +143,7 @@ router.route('/delete_entry/:id/:date').put((req, res) => {
 /**
  * deletes an entire participant document from the db
  */
-router.route('/delete/:id').delete((req, res) => {
+router.route('/delete/:id').delete(checkJwt, (req, res) => {
     // finds and deletes using object ID
     Participant.findByIdAndDelete(req.params.id)
         .then(() => res.json('Participant deleted'))
