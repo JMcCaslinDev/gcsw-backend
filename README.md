@@ -18,6 +18,8 @@ Creates server on `http://localhost:6060`
 
 ## Database Schema
 
+![Participants ER diagram](https://user-images.githubusercontent.com/49994182/206362935-61933d0a-391a-4f73-b043-44d583a1d52f.png)
+
 ## REST API Endpoints
 
 These are the API endpoints for the application.
