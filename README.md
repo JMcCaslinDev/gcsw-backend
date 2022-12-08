@@ -1,10 +1,14 @@
-# GCSW Backend
+# GCSW Backend API
 
 This is the backend component of the Greenfield Community Science Workshop Database Project, created as part the service learning requirement for CST-462S at California State University, Monterey Bay.
+
+[GCSW Frontend](https://github.com/PedroG1018/gcsw-frontend)
 
 ## How to Run Locally 
 
 	npm start
+	
+	Note: When running the frontend locally, change CLIENT_ORIGIN_URL in .env file to http://localhost:3000/
 
 Creates server on `http://localhost:6060`
 	
