@@ -7,7 +7,7 @@ const { updateOne } = require('../models/participant.model');
 /**
  * default route, gets all participants in the db
  */
-router.route('/').get(/*checkJwt,*/ (req, res) => {
+router.route('/').get(checkJwt, (req, res) => {
     Participant.find().sort('first_name')
         .then(participants => res.json(participants))
         .catch(err => res.status(400).json('Error: ' + err));
