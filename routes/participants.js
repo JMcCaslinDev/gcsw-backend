@@ -7,8 +7,8 @@ const { updateOne } = require('../models/participant.model');
 /**
  * default route, gets all participants in the db
  */
-router.route('/').get(checkJwt, (req, res) => {
-    Participant.find()
+router.route('/').get(/*checkJwt,*/ (req, res) => {
+    Participant.find().sort('first_name')
         .then(participants => res.json(participants))
         .catch(err => res.status(400).json('Error: ' + err));
 });
@@ -148,6 +148,14 @@ router.route('/delete/:object_id').delete(checkJwt, (req, res) => {
     Participant.findByIdAndDelete(req.params.object_id)
         .then(() => res.json('Participant deleted'))
         .catch(err => res.status(400).json('Error: ' + err));
+});
+
+router.route('/search').get((req, res) => {
+    const searchTerm = req.query.q;
+    Participant.find({ first_name: { $regex: `^${searchTerm}`, $options: 'i' } })
+      .exec()
+      .then(participants => res.json(participants))
+      .catch(err => res.status(400).json('Error: ' + err));
 });
 
 module.exports = router;

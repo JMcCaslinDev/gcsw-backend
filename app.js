@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 6060;
+const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -20,11 +20,13 @@ connection.once('open', () => {
 });
 
 const participantsRouter = require('./routes/participants');
+const volunteersRouter = require('./routes/volunteers')
 
 /**
  * API endpoints
  */
 app.use('/api/participants', participantsRouter);
+app.use('/api/volunteers', volunteersRouter)
 
 /**
  * Default route
