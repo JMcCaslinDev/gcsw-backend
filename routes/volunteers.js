@@ -200,4 +200,34 @@ router.route('/logout').put((req, res) => {
     });
 })
 
+router.route('/adminLogout').put((req, res) => {
+    //TODO
+    Volunteer.findOne({ volunteer_id: req.body.volunteer_id }, function (err, volunteer) {
+        if (!err) {
+            // if volunteer is already in the db, simply update their objective and sign in date
+            if (volunteer) {
+                const log_in_time = volunteer.log_in_time.getTime()
+                const log_out_time = Date.now()
+                const difference_ms = log_out_time - log_in_time;
+                const difference_hrs = difference_ms / (1000 * 60 * 60);
+                const total_hours = (volunteer.total_hours + difference_hrs).toFixed(1);
+                // update the volunteer with new objective and date
+                Volunteer.updateOne(
+                    { volunteer_id: req.body.volunteer_id },
+                    {
+                        $set: {
+                            ["is_signed_in"]: false,
+                            [`volunteer_objectives.${req.body.date}`]: "Force Logged Out",
+                            [`volunteer_suggestions.${req.body.date}`]: "Force Logged Out",
+                            ["total_hours"]:  total_hours
+                        }
+                    },
+                )
+                    .then(() => res.json('Volunteer logged out'))
+                    .catch(err => res.status(400).json('Error: ' + err));
+            }
+        }
+    });
+})
+
 module.exports = router;
