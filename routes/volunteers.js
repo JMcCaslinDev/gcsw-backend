@@ -75,11 +75,13 @@ router.route('/signin').post((req, res) => {
                 const gender = req.body.gender;
                 const age = req.body.age;
                 const is_signed_in = true;
+                const phone_number = req.body.phone_number
                 const log_in_time = Date.now();
 
                 // initialize empty map
                 const volunteer_objectives = new Map();
                 const volunteer_suggestions = new Map();
+                const hours_on_date = new Map();
 
                 // create a new volunteer object
                 const newVolunteer = new Volunteer({
@@ -90,8 +92,10 @@ router.route('/signin').post((req, res) => {
                     age,
                     volunteer_objectives,
                     volunteer_suggestions,
+                    hours_on_date,
                     is_signed_in,
-                    log_in_time
+                    log_in_time,
+                    phone_number
                     // school,
                     // dates_with_objectives
                 });
@@ -99,6 +103,8 @@ router.route('/signin').post((req, res) => {
                 // set new date key with objective
                 newVolunteer.volunteer_objectives.set(req.body.date, "objective");
                 newVolunteer.volunteer_suggestions.set(req.body.date, "objective");
+                newVolunteer.hours_on_date.set(req.body.date, 0);
+
 
                 // save new volunteer
                 newVolunteer.save()
@@ -170,6 +176,15 @@ router.route('/search').get((req, res) => {
         .catch(err => res.status(400).json('Error: ' + err));
 });
 
+router.route('/searchTitle').get((req, res) => {
+    const searchTerm = req.query.q;
+    const query = searchTerm ? { volunteer_title: searchTerm } : {};
+    Volunteer.find(query)
+        .exec()
+        .then(volunteers => res.json(volunteers))
+        .catch(err => res.status(400).json('Error: ' + err));
+});
+
 router.route('/logout').put((req, res) => {
     //TODO
     Volunteer.findOne({ volunteer_id: req.body.volunteer_id }, function (err, volunteer) {
@@ -181,6 +196,8 @@ router.route('/logout').put((req, res) => {
                 const difference_ms = log_out_time - log_in_time;
                 const difference_hrs = difference_ms / (1000 * 60 * 60);
                 const total_hours = (volunteer.total_hours + difference_hrs).toFixed(1);
+                const title = getTitle(total_hours)
+                const hoursOnDate = req.body.difference_hrs ? req.body.difference_hrs.toFixed(1) : '0';
                 // update the volunteer with new objective and date
                 Volunteer.updateOne(
                     { volunteer_id: req.body.volunteer_id },
@@ -189,7 +206,9 @@ router.route('/logout').put((req, res) => {
                             ["is_signed_in"]: false,
                             [`volunteer_objectives.${req.body.date}`]: req.body.objective,
                             [`volunteer_suggestions.${req.body.date}`]: req.body.suggestions,
-                            ["total_hours"]:  total_hours
+                            [`hours_on_date.${req.body.date}`]: hoursOnDate,
+                            ["total_hours"]:  total_hours,
+                            ["volunteer_title"]: title
                         }
                     },
                 )
@@ -211,6 +230,10 @@ router.route('/adminLogout').put((req, res) => {
                 const difference_ms = log_out_time - log_in_time;
                 const difference_hrs = difference_ms / (1000 * 60 * 60);
                 const total_hours = (volunteer.total_hours + difference_hrs).toFixed(1);
+                const title = getTitle(total_hours)
+
+                const hoursOnDate = req.body.difference_hrs ? req.body.difference_hrs.toFixed(1) : 0;
+
                 // update the volunteer with new objective and date
                 Volunteer.updateOne(
                     { volunteer_id: req.body.volunteer_id },
@@ -219,7 +242,9 @@ router.route('/adminLogout').put((req, res) => {
                             ["is_signed_in"]: false,
                             [`volunteer_objectives.${req.body.date}`]: "Force Logged Out",
                             [`volunteer_suggestions.${req.body.date}`]: "Force Logged Out",
-                            ["total_hours"]:  total_hours
+                            [`hours_on_date.${req.body.date}`]: hoursOnDate,
+                            ["total_hours"]:  total_hours,
+                            ["volunteer_title"]: title
                         }
                     },
                 )
@@ -229,5 +254,33 @@ router.route('/adminLogout').put((req, res) => {
         }
     });
 })
+
+const getTitle = (totalHours) => {
+    if (totalHours >= 10 && totalHours <= 25) {
+        return 'Lab Explorer';
+    } else if (totalHours >= 26 && totalHours <= 50) {
+        return 'Science Sidekick';
+    } else if (totalHours >= 51 && totalHours <= 100) {
+        return 'Research Rockstar';
+    } else if (totalHours >= 101 && totalHours <= 200) {
+        return 'Experiment Hunter';
+    } else if (totalHours >= 201 && totalHours <= 300) {
+        return 'Lab Ninja';
+    } else if (totalHours >= 301 && totalHours <= 400) {
+        return 'Dr. Cerebro';
+    } else if (totalHours >= 401 && totalHours <= 500) {
+        return 'Jedi of Science';
+    } else if (totalHours >= 501 && totalHours <= 750) {
+        return 'Master of Science';
+    } else if (totalHours >= 751 && totalHours <= 1000) {
+        return 'Science Sensei';
+    } else if (totalHours > 1000) {
+        return 'Mad Scientist';
+    } else {
+        return 'Intern Scientist';
+    }
+}
+
+
 
 module.exports = router;
