@@ -10,13 +10,17 @@ const volunteerSchema = new Schema({
     age: { type: Number, require: true },
     volunteer_objectives : { type: Map, required: true, default:""},
     volunteer_suggestions: { type: Map, required: true, default:""},
+    hours_on_date: {type:Map, required: true, default:""},
     log_in_time: {type:Date},
     log_out_time: {type:Date},
     total_hours: {type: Number, default: 0},
-    is_signed_in: {type: Boolean}
+    is_signed_in: {type: Boolean},
+    phone_number: {type: String, required:true},
+    volunteer_title: {type: String, default: ""},
 }, {
     timestamps: true,
 });
+
 
 const Volunteer = mongoose.model('Volunteer', volunteerSchema);
 
